@@ -37,4 +37,9 @@ User.create = (user) =>{
     ]);
 };
 
-module.exports = User;
+User.findById = (id, callback) => {
+    const sql = `select id, email, name, lastname, image, phone, password, session_token from users where id = $1`;
+    return db.oneOrNone(sql, id).then(user => callback(null, user));
+};
+
+module.exports = User; 
