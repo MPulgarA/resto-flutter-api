@@ -1,6 +1,7 @@
 const User = require('./../models/user');
 const jwt = require('jsonwebtoken');
 const Keys = require('./../config/keys');
+const Rol = require('./../models/rol');
 
 module.exports = {
     async getAll(req, res, next){
@@ -20,6 +21,10 @@ module.exports = {
         try {
             const user = req.body;
             const data = await User.create(user);
+            
+            // Asignación de rol por defecto
+            await Rol.create(data.id, 1)
+
             return res.status(201).json({
                 success: true,
                 message: 'El registro se realizo correctamente',
@@ -64,6 +69,7 @@ module.exports = {
 
                 return res.status(201).json({
                     success: true,
+                    message: 'Login exitoso',
                     data
                 });
             }else{
