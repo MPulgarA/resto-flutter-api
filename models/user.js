@@ -42,4 +42,18 @@ User.findById = (id, callback) => {
     return db.oneOrNone(sql, id).then(user => callback(null, user));
 };
 
+User.findByEmail = (email) => {
+    const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
+    return db.oneOrNone(sql, email);
+};
+
+User.isPasswordMatch = (userPassword, hash) => {
+    const mypasswordHashed = crypto.createHash('md5').update(userPassword).digest('hex');
+    if(mypasswordHashed === hash){
+        return true;
+    }else{
+        return false;
+    }
+};
+
 module.exports = User; 
