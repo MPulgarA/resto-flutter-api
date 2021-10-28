@@ -3,12 +3,12 @@ const crypto = require('crypto');
 
 const User = {};
 
-User.getAll = () =>{
+User.getAll = () => {
     const sql = `select * from users`;
     return db.manyOrNone(sql);
 };
 
-User.create = (user) =>{
+User.create = (user) => {
 
     const mypasswordHashed = crypto.createHash('md5').update(user.password).digest('hex');
     user.password = mypasswordHashed;
@@ -26,10 +26,10 @@ User.create = (user) =>{
                 ) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`;
     return db.oneOrNone(sql, [
-        user.email, 
-        user.name, 
-        user.lastname, 
-        user.phone, 
+        user.email,
+        user.name,
+        user.lastname,
+        user.phone,
         user.image,
         user.password,
         new Date(),
@@ -43,17 +43,95 @@ User.findById = (id, callback) => {
 };
 
 User.findByEmail = (email) => {
-    const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
+    // const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
+    const sql = `
+    SELECT 
+    u.id, u.email, u.name, u.lastname, u.image, u.phone, u.password, u.session_token,
+        json_agg(
+            json_build_object(
+            'id', r.id,
+            'name', r.name,
+            'image', r.image,
+            'route', r.route
+        ) 
+    ) AS roles   
+    FROM 
+        users AS u
+    INNER JOIN 
+        user_has_role AS uhr
+    ON 
+        uhr.id_user = u.id
+    INNER JOIN 
+        roles AS r
+    ON
+        r.id = uhr.id_rol
+    WHERE
+        u.email = $1
+    GROUP BY
+        u.id             
+    `;
     return db.oneOrNone(sql, email);
+};
+
+User.findUserId = (id) => {
+    // const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
+    const sql = `
+    SELECT 
+    u.id, u.email, u.name, u.lastname, u.image, u.phone, u.password, u.session_token,
+        json_agg(
+            json_build_object(
+            'id', r.id,
+            'name', r.name,
+            'image', r.image,
+            'route', r.route
+        ) 
+    ) AS roles   
+    FROM 
+        users AS u
+    INNER JOIN 
+        user_has_role AS uhr
+    ON 
+        uhr.id_user = u.id
+    INNER JOIN 
+        roles AS r
+    ON
+        r.id = uhr.id_rol
+    WHERE
+        u.id = $1
+    GROUP BY
+        u.id             
+    `;
+    return db.oneOrNone(sql, id);
 };
 
 User.isPasswordMatch = (userPassword, hash) => {
     const mypasswordHashed = crypto.createHash('md5').update(userPassword).digest('hex');
-    if(mypasswordHashed === hash){
+    if (mypasswordHashed === hash) {
         return true;
-    }else{
+    } else {
         return false;
     }
+};
+
+User.update = (user) => {
+    const sql = `UPDATE  users SET name = $2, lastname = $3, phone = $4, image = $5, updated_at = $6 where id = $1`;
+    return db.none(sql, [
+        user.id,
+        user.name,
+        user.lastname, 
+        user.phone, 
+        user.image,
+        new Date()
+    ]);
+};
+
+
+User.updateToken = (id, token) => {
+    const sql = `UPDATE  users SET session_token = $2 WHERE id = $1`;
+    return db.none(sql, [
+        id,
+        token
+    ]);
 };
 
 module.exports = User; 
