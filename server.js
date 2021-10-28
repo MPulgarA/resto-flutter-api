@@ -22,6 +22,7 @@ const upload = multer({
 // Rutas
 const users = require('./routes/usersRoutes');
 const categories = require('./routes/categoriesRoute');
+const products = require('./routes/productRoutes');
 
 const port = process.env.PORT || 3000;
 
@@ -43,6 +44,7 @@ app.set('port', port);
 // Llamado a las rutas
 users(app, upload);
 categories(app);
+products(app, upload);
 
 server.listen(3000, 'localhost', function(){
     console.log('Aplicación de nodejs', + process.pid + ' iniciada')
