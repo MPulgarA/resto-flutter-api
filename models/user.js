@@ -134,4 +134,31 @@ User.updateToken = (id, token) => {
     ]);
 };
 
+User.findDeliveryMan = () => {
+    // const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
+    const sql = `
+    SELECT 
+        u.id, 
+        u.email, 
+        u.name, 
+        u.lastname, 
+        u.image, 
+        u.phone, 
+        u.password, 
+        u.session_token
+    FROM  
+        users AS u
+    INNER JOIN    
+        user_has_role AS uhr   
+    ON
+        uhr.id_user = u.id
+    INNER JOIN 
+        roles as r
+    ON 
+        r.id = uhr.id_rol
+    WHERE 
+        r.id = 3`;
+    return db.manyOrNone(sql);
+};
+
 module.exports = User; 

@@ -8,6 +8,17 @@ const multer = require('multer');
 const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json');
 const passport = require('passport');
+const io = require('socket.io')(server);
+const mercadopago = require('mercadopago');
+
+
+// Mercado pago
+mercadopago.configure({
+    access_token : 'TEST-6423076169469888-110413-50a66e858b9607869cf0a939c16ba76a-165732357'
+});
+
+// Socket.io
+const orderDeliverySocket = require('./sockets/orders_delivery_socket');
 
 
 // Inicializar firebase
@@ -21,8 +32,12 @@ const upload = multer({
 
 // Rutas
 const users = require('./routes/usersRoutes');
-const categories = require('./routes/categoriesRoute');
+const categories = require('./routes/categoriesRoutes');
+const address = require('./routes/addressRoutes');
 const products = require('./routes/productRoutes');
+const orders = require('./routes/ordersRoutes');
+const mercadoPagoRoute = require('./routes/mercadoPagoRoutes');
+
 
 const port = process.env.PORT || 3000;
 
@@ -41,10 +56,16 @@ app.disable('x-powered-by');
 
 app.set('port', port);
 
+// llamado de socket
+orderDeliverySocket(io);
+
 // Llamado a las rutas
 users(app, upload);
 categories(app);
 products(app, upload);
+address(app);
+orders(app);
+mercadoPagoRoute(app);
 
 server.listen(3000, 'localhost', function(){
     console.log('Aplicación de nodejs', + process.pid + ' iniciada')

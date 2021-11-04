@@ -13,5 +13,7 @@ module.exports = (app, upload) => {
 
     // Actualizar datos
     app.put('/api/users/update', passport.authenticate('jwt', { session: false }), upload.array('image', 1), UsersController.update);
+
+    app.get('/api/users/findDeliveryMan', passport.authenticate('jwt', { session: false }), upload.array('image', 1), UsersController.findDeliveryMan);
 };
 

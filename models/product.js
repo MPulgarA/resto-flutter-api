@@ -45,4 +45,9 @@ Product.update = (product) => {
     ]);
 };
 
+Product.findByCategory = (id_category) => {
+    const sql = `SELECT p.id, p.name, p.description, p.image1, p.image2, p.image3, p.id_category FROM products AS p INNER JOIN categories AS c ON p.id_category = c.id where c.id = $1`;
+    return db.manyOrNone(sql, id_category);
+}
+
 module.exports = Product;

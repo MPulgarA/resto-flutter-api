@@ -1,11 +1,14 @@
 const Product = require('./../models/product');
 // Con este se pueden almacenar varias imagenes
-const storage = require('./../utils/async_foreach');
-const asyncForEach = require('./../utils/cloud_storage');
+const asyncForEach = require('./../utils/async_foreach');
+const storage = require('./../utils/cloud_storage');
 
 module.exports = {
     async create(req, res, next) {
-        const product = JSON.parse(req.body.product);
+        let product = JSON.parse(req.body.product);
+
+        console.log(JSON.stringify(product));
+
         const files = req.files;
 
         let inserts = 0;
@@ -14,7 +17,8 @@ module.exports = {
             return res.status(501).json({
                 message: 'Error al registrar el producto, no tiene imagen',
                 success: false
-            })
+            });
+            
         } else {
             try {
                 const data = await Product.create(product);
@@ -29,11 +33,20 @@ module.exports = {
                             if (inserts == 0) product.image1 = url;
                             if (inserts == 1) product.image2 = url;
                             if (inserts == 2) product.image3 = url;
-                        };
-                        await Product.update(product);
-                        inserts +=1;
 
-                        if(inserts == files.length){
+                            // if(inserts == 0){
+                            //     product.image1 = url;
+                            // }else if(inserts == 1){
+                            //     product.image2 = url;
+                            // }else if(inserts == 2){
+                            //     product.image3 = url;
+                            // }
+                        };
+
+                        await Product.update(product);
+                        inserts += 1;
+
+                        if (inserts == files.length) {
                             return res.status(201).json({
                                 success: true,
                                 message: 'El producto se ha registrado correctamente'
@@ -52,7 +65,21 @@ module.exports = {
                     success: false,
                     error
                 });
-            }
+            };
+        };
+    },
+    async findByCategory(req, res, next) {
+        try {
+            const {id_category} = req.params;
+            const data = await Product.findByCategory(id_category);
+            return res.status(201).json(data);
+        } catch (error) {
+            console.log(error);
+            return res.status(501).json({
+                message: 'Error al listar los productos',
+                success: false,
+                error
+            });
         }
-    }
-}
+    },
+};
