@@ -45,6 +45,7 @@ module.exports = {
                 payment.id_payment_method = payment_type_id;
 
                 let order = payment.order;
+                order.status = 'PAGADO';
                 const info = await Order.create(order);
     
                 // Recorrer todos los productos agregados a la orden

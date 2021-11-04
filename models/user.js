@@ -38,7 +38,21 @@ User.create = (user) => {
 };
 
 User.findById = (id, callback) => {
-    const sql = `select id, email, name, lastname, image, phone, password, session_token from users where id = $1`;
+    const sql = `
+        SELECT 
+            id, 
+            email, 
+            name, 
+            lastname, 
+            image, 
+            phone, 
+            password, 
+            session_token,
+            notification_token 
+        from 
+            users 
+        where 
+            id = $1`;
     return db.oneOrNone(sql, id).then(user => callback(null, user));
 };
 
@@ -46,7 +60,7 @@ User.findByEmail = (email) => {
     // const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
     const sql = `
     SELECT 
-    u.id, u.email, u.name, u.lastname, u.image, u.phone, u.password, u.session_token,
+    u.id, u.email, u.name, u.lastname, u.image, u.phone, u.password, u.session_token, u.notification_token,
         json_agg(
             json_build_object(
             'id', r.id,
@@ -77,7 +91,7 @@ User.findUserId = (id) => {
     // const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
     const sql = `
     SELECT 
-    u.id, u.email, u.name, u.lastname, u.image, u.phone, u.password, u.session_token,
+    u.id, u.email, u.name, u.lastname, u.image, u.phone, u.password, u.session_token, u.notification_token ,
         json_agg(
             json_build_object(
             'id', r.id,
@@ -134,6 +148,14 @@ User.updateToken = (id, token) => {
     ]);
 };
 
+User.updateNotificationToken = (id, token) => {
+    const sql = `UPDATE  users SET notification_token = $2 WHERE id = $1`;
+    return db.none(sql, [
+        id,
+        token
+    ]);
+};
+
 User.findDeliveryMan = () => {
     // const sql = `select id, email, name, lastname, image, phone, password, session_token from users where email = $1`;
     const sql = `
@@ -145,7 +167,8 @@ User.findDeliveryMan = () => {
         u.image, 
         u.phone, 
         u.password, 
-        u.session_token
+        u.session_token,
+        u.notification_token 
     FROM  
         users AS u
     INNER JOIN    
@@ -160,5 +183,26 @@ User.findDeliveryMan = () => {
         r.id = 3`;
     return db.manyOrNone(sql);
 };
+
+User.getAdminNotificationToken = () => {
+    const sql = `
+    SELECT 
+        u.notification_token 
+    FROM  
+        users AS u
+    INNER JOIN    
+        user_has_role AS uhr   
+    ON
+        uhr.id_user = u.id
+    INNER JOIN 
+        roles as r
+    ON 
+        r.id = uhr.id_rol
+    WHERE 
+        r.id = 2`;
+    return db.manyOrNone(sql);
+};
+
+
 
 module.exports = User; 

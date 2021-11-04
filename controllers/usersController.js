@@ -207,4 +207,40 @@ module.exports = {
             });
         }
     },
+    async updateNotificationToken(req, res, next) {
+        try {
+            const {id, notification_token} = req.body;
+            await User.updateNotificationToken(id, notification_token);
+
+            return res.status(201).json({
+                success: true,
+                message: 'El tokn de notificaciones se ha almacenado correctamente',
+            })
+        } catch (error) {
+            console.log('Error ', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Hubo un error al tratar de actualizar el token del usuario',
+                error
+            });
+        }
+    },
+    async getAdminsNotificationTokens(req, res, next) {
+        try {
+            const data = await User.getAdminNotificationToken();
+            let tokens = [];
+
+            data.forEach(d => {
+                tokens.push(d.notification_token);
+            });
+            
+            return res.status(201).json(tokens);
+        } catch (error) {
+            console.log('Error ', error);
+            return res.status(501).json({
+                success: false,
+                message: 'Error al obtener los tokens de notificaciones de los administradores'
+            });
+        }
+    },
 };
